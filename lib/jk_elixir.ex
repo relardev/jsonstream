@@ -1,6 +1,6 @@
 defmodule JkElixir do
-  def main(path) do
-    File.stream!(path)
+  def main(stream) do
+    stream
     |> Stream.map(&Jason.decode!/1)
     |> Enum.reduce(%{}, fn record, acc ->
       new = keys(record)
@@ -9,6 +9,9 @@ defmodule JkElixir do
     |> Jason.encode!()
     |> IO.puts()
   end
+
+  defp stream(nil), do: IO.stream(:stdio, :line)
+  defp stream(path), do: File.stream!(path)
 
   defp keys(record) do
     record
