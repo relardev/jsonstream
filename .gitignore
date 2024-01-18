@@ -24,3 +24,6 @@ jk_elixir-*.tar
 
 # Temporary files, for example, from tests.
 /tmp/
+
+s2s.json
+jk_elixir
