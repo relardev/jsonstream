@@ -1,13 +1,14 @@
 defmodule JkElixir do
-  @moduledoc """
-  Documentation for `JkElixir`.
-  """
-
-  defp val(v) when is_map(v) do
-    keys(v)
+  def main(path) do
+    File.stream!(path)
+    |> Stream.map(&Jason.decode!/1)
+    |> Enum.reduce(%{}, fn record, acc ->
+      new = keys(record)
+      merge(acc, new)
+    end)
+    |> Jason.encode!()
+    |> IO.puts()
   end
-
-  defp val(_v), do: 1
 
   defp keys(record) do
     record
@@ -16,8 +17,11 @@ defmodule JkElixir do
     end)
   end
 
-  defp to_base(v) when is_nil(v), do: 0
-  defp to_base(v), do: v
+  defp val(v) when is_map(v) do
+    keys(v)
+  end
+
+  defp val(_v), do: 1
 
   defp merge(map1, map2) when is_map(map1) and is_map(map2) do
     [map1, map2]
@@ -39,14 +43,6 @@ defmodule JkElixir do
     end
   end
 
-  def main(path) do
-    File.stream!(path)
-    |> Stream.map(&Jason.decode!/1)
-    |> Enum.reduce(%{}, fn record, acc ->
-      new = keys(record)
-      merge(acc, new)
-    end)
-    |> Jason.encode!()
-    |> IO.puts()
-  end
+  defp to_base(v) when is_nil(v), do: 0
+  defp to_base(v), do: v
 end
