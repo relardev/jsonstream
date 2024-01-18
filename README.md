@@ -3,6 +3,8 @@
 Count number of each key in list of jsons. Input file needs to have json in each line, eg:
 
 ```
+> cat records.json
+
 {"a": 1234, "b": 5678, "c": 9012}
 {"d": 3456 }
 {"f": {"g": 7890} }
@@ -10,6 +12,22 @@ Count number of each key in list of jsons. Input file needs to have json in each
 {"c": "1234"}
 {"list":[1,2,3]}
 {"list":{"ars":[1,2,555]}}
+
+> ./jk_elixir records.json
+
+{
+  "a": 1,
+  "b": 1,
+  "c": 2,
+  "d": 1,
+  "f": {
+    "d": 1,
+    "g": 1
+  },
+  "list": {
+    "ars": 1
+  }
+}
 ```
 
 # Run With Docker
