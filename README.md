@@ -1,21 +1,6 @@
 # JkElixir
 
-**TODO: Add description**
-
-## Installation
-
-If [available in Hex](https://hex.pm/docs/publish), the package can be installed
-by adding `jk_elixir` to your list of dependencies in `mix.exs`:
-
-```elixir
-def deps do
-  [
-    {:jk_elixir, "~> 0.1.0"}
-  ]
-end
-```
-
-Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
-and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
-be found at <https://hexdocs.pm/jk_elixir>.
-
+1. install elixir
+1. download dependencies - `mix deps.get`
+1. build binary - `mix escrypt.build`
+1. you have binary ready to go
