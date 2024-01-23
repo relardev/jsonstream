@@ -1,17 +1,36 @@
 defmodule JkElixir do
+  require Logger
+
   def main(stream) do
     stream
     |> Stream.map(&Jason.decode!/1)
-    |> Enum.reduce(%{}, fn record, acc ->
+    |> Enum.reduce({%{}, 0, System.monotonic_time()}, fn record, acc ->
+      result = elem(acc, 0)
+      counter = elem(acc, 1)
+      timer = elem(acc, 2)
+
+      timer =
+        case rem(counter, 1000) do
+          0 ->
+            now = System.monotonic_time()
+            delta = (now - timer) / 1_000_000.0
+            formatted_delta = :io_lib.format("~.2f", [delta])
+
+            IO.puts(:stderr, "At #{counter} records, delta=#{formatted_delta}ms")
+
+            now
+
+          _ ->
+            timer
+        end
+
       new = keys(record)
-      merge(acc, new)
+      {merge(result, new), counter + 1, timer}
     end)
+    |> elem(0)
     |> Jason.encode!()
     |> IO.puts()
   end
-
-  defp stream(nil), do: IO.stream(:stdio, :line)
-  defp stream(path), do: File.stream!(path)
 
   defp keys(record) do
     record
