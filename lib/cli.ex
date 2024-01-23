@@ -4,6 +4,6 @@ defmodule CLI do
     |> JkElixir.main()
   end
 
-  defp stream([]), do: IO.stream(:stdio, :line)
+  defp stream([]), do: File.stream!("/dev/stdin")
   defp stream(path), do: File.stream!(path)
 end
