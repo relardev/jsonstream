@@ -3,7 +3,9 @@ defmodule JkElixir do
 
   def main(stream) do
     stream
-    |> Stream.map(&Jason.decode!/1)
+    |> Stream.map(fn data ->
+      Jason.decode!(data)
+    end)
     |> Enum.reduce({%{}, 0, System.monotonic_time()}, fn record, acc ->
       result = elem(acc, 0)
       counter = elem(acc, 1)
