@@ -1,7 +1,9 @@
-defmodule JkElixir do
+defmodule Keys do
   require Logger
 
-  def main(stream) do
+  def process(stream_factory) do
+    stream = stream_factory.()
+
     stream
     |> Stream.map(fn data ->
       Jason.decode!(data)
@@ -32,6 +34,8 @@ defmodule JkElixir do
     |> elem(0)
     |> Jason.encode!()
     |> IO.puts()
+
+    :ok
   end
 
   defp keys(record) do

@@ -1,37 +1,59 @@
 defmodule CLI do
   def main(argv) do
-    stream(argv)
-    |> JkElixir.main()
+    factory = stream_factory(argv)
+
+    {:ok, _} = MainGenServer.start_link({self(), factory})
+
+    receive do
+      :done -> :ok
+    end
   end
 
-  defp stream([]) do
-    {:ok, pid} = StdinServer.start_link()
-
-    Stream.resource(
-      fn -> {} end,
-      fn _ ->
-        case GenServer.call(pid, :read) do
-          :eof -> {:halt, {}}
-          data -> {[data], {}}
-        end
-      end,
-      fn _ -> :ok end
-    )
-  end
-
-  defp stream([path]) do
+  defp stream_factory([path]) do
     {:ok, pid} = FileServer.start_link(path)
 
-    Stream.resource(
-      fn -> {} end,
-      fn _ ->
-        case GenServer.call(pid, :read) do
-          :eof -> {:halt, {}}
-          data -> {[data], {}}
-        end
-      end,
-      fn _ -> :ok end
-    )
+    fn ->
+      Stream.resource(
+        fn -> {} end,
+        fn _ ->
+          case GenServer.call(pid, :read) do
+            :eof -> {:halt, {}}
+            data -> {[data], {}}
+          end
+        end,
+        fn _ -> :ok end
+      )
+    end
+  end
+end
+
+defmodule MainGenServer do
+  use GenServer
+
+  def start_link(stream_factory) do
+    GenServer.start_link(__MODULE__, stream_factory, name: __MODULE__)
+  end
+
+  def init({from, stream_factory}) do
+    Task.async(fn ->
+      Keys.process(stream_factory)
+      GenServer.call(__MODULE__, :done)
+    end)
+
+    {:ok, {from, 1}}
+  end
+
+  def handle_call(:done, _from, {from, counter}) do
+    counter = counter - 1
+
+    case counter do
+      0 ->
+        send(from, :done)
+        {:reply, :ok, {from, 0}}
+
+      _ ->
+        {:reply, :ok, {from, counter}}
+    end
   end
 end
 
