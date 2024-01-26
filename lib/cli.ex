@@ -44,6 +44,40 @@ defmodule CLI do
   end
 end
 
+defmodule Progress do
+  use GenServer
+
+  def start_link(report_every) do
+    GenServer.start_link(__MODULE__, report_every, name: __MODULE__)
+  end
+
+  def init(report_every) do
+    {:ok, {0, 0, report_every, System.monotonic_time()}}
+  end
+
+  def update(count) do
+    GenServer.cast(__MODULE__, {:update, count})
+  end
+
+  def handle_cast({:update, count}, {current_count, since_last_report, report_every, start_time}) do
+    new_count = count + current_count
+    new_since_last_report = count + since_last_report
+
+    case new_since_last_report >= report_every do
+      true ->
+        now = System.monotonic_time()
+        rate = current_count / (now - start_time) * 1_000_000_000
+
+        IO.puts(:stderr, "Processed #{new_count} keys at #{rate} keys/sec")
+
+        {:noreply, {new_count, new_since_last_report - report_every, report_every, start_time}}
+
+      false ->
+        {:noreply, {new_count, new_since_last_report, report_every, start_time}}
+    end
+  end
+end
+
 defmodule MainGenServer do
   use GenServer
 
@@ -54,29 +88,31 @@ defmodule MainGenServer do
   def init({from, stream_factory}) do
     worker_count = System.schedulers_online() * 2
 
+    Progress.start_link(5000 * worker_count)
+
     for n <- 1..worker_count do
       IO.puts(:stderr, "Starting worker #{n}")
 
       Task.async(fn ->
         {:ok, result} = Keys.process(stream_factory)
-        GenServer.call(__MODULE__, {:done, result})
+        GenServer.cast(__MODULE__, {:done, result})
       end)
     end
 
     {:ok, {from, worker_count, %{}}}
   end
 
-  def handle_call({:done, result}, _from, {from, counter, previous}) do
+  def handle_cast({:done, result}, {from, counter, previous}) do
     result = Keys.merge(previous, result)
     counter = counter - 1
 
     case counter do
       0 ->
         send(from, {:done, Jason.encode!(result)})
-        {:reply, :ok, {from, 0, result}}
+        {:noreply, {from, 0, result}}
 
       _ ->
-        {:reply, :ok, {from, counter, result}}
+        {:noreply, {from, counter, result}}
     end
   end
 

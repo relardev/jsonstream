@@ -7,28 +7,19 @@ defmodule Keys do
       |> Stream.map(fn data ->
         Jason.decode!(data)
       end)
-      |> Enum.reduce({%{}, 0, System.monotonic_time()}, fn record, acc ->
-        result = elem(acc, 0)
-        counter = elem(acc, 1)
-        timer = elem(acc, 2)
+      |> Enum.reduce({%{}, 0}, fn record, {result, counter} ->
+        counter =
+          case counter do
+            5000 ->
+              Progress.update(counter)
+              0
 
-        timer =
-          case rem(counter, 1000) do
-            0 ->
-              now = System.monotonic_time()
-              delta = (now - timer) / 1_000_000.0
-              formatted_delta = :io_lib.format("~.2f", [delta])
-
-              IO.puts(:stderr, "At #{counter} records, delta=#{formatted_delta}ms")
-
-              now
-
-            _ ->
-              timer
+            counter ->
+              counter
           end
 
         new = keys(record)
-        {merge(result, new), counter + 1, timer}
+        {merge(result, new), counter + 1}
       end)
       |> elem(0)
 
