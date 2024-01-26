@@ -25,6 +25,23 @@ defmodule CLI do
       )
     end
   end
+
+  defp stream_factory([]) do
+    {:ok, pid} = StdinServer.start_link()
+
+    fn ->
+      Stream.resource(
+        fn -> {} end,
+        fn _ ->
+          case GenServer.call(pid, :read) do
+            :eof -> {:halt, {}}
+            data -> {[data], {}}
+          end
+        end,
+        fn _ -> :ok end
+      )
+    end
+  end
 end
 
 defmodule MainGenServer do
@@ -107,23 +124,16 @@ defmodule StdinServer do
   end
 
   def init(_) do
-    {:ok, [""]}
+    {:ok, {}}
   end
 
-  def handle_call(:read, _from, cache) do
-    case length(cache) do
-      1 ->
-        case IO.read(:stdio, 100_000) do
-          :eof ->
-            {:reply, :eof, []}
-
-          data ->
-            lines = String.split(hd(cache) <> data, :binary.compile_pattern(["\n"]))
-            {:reply, hd(lines), tl(lines)}
-        end
+  def handle_call(:read, _from, _any) do
+    case IO.read(:stdio, :line) do
+      data when is_binary(data) ->
+        {:reply, data, {}}
 
       _ ->
-        {:reply, hd(cache), tl(cache)}
+        {:reply, :eof, {}}
     end
   end
 end
