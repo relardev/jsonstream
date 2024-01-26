@@ -5,7 +5,7 @@ defmodule CLI do
     {:ok, _} = MainGenServer.start_link({self(), factory})
 
     receive do
-      :done -> :ok
+      {:done, result} -> IO.puts(result)
     end
   end
 
@@ -35,25 +35,40 @@ defmodule MainGenServer do
   end
 
   def init({from, stream_factory}) do
-    Task.async(fn ->
-      Keys.process(stream_factory)
-      GenServer.call(__MODULE__, :done)
-    end)
+    worker_count = System.schedulers_online() * 2
 
-    {:ok, {from, 1}}
+    for n <- 1..worker_count do
+      IO.puts(:stderr, "Starting worker #{n}")
+
+      Task.async(fn ->
+        {:ok, result} = Keys.process(stream_factory)
+        GenServer.call(__MODULE__, {:done, result})
+      end)
+    end
+
+    {:ok, {from, worker_count, %{}}}
   end
 
-  def handle_call(:done, _from, {from, counter}) do
+  def handle_call({:done, result}, _from, {from, counter, previous}) do
+    result = Keys.merge(previous, result)
     counter = counter - 1
 
     case counter do
       0 ->
-        send(from, :done)
-        {:reply, :ok, {from, 0}}
+        send(from, {:done, Jason.encode!(result)})
+        {:reply, :ok, {from, 0, result}}
 
       _ ->
-        {:reply, :ok, {from, counter}}
+        {:reply, :ok, {from, counter, result}}
     end
+  end
+
+  def handle_info({:DOWN, _ref, :process, _pid, _reason}, state) do
+    {:noreply, state}
+  end
+
+  def handle_info({_ref, :ok}, state) do
+    {:noreply, state}
   end
 end
 
