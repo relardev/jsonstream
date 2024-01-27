@@ -160,8 +160,8 @@ defmodule CliParser do
             "name": 3
           }
         }
-        $ js enums records
 
+        $ js enums records
         {
           "person": {
             "age": 23,
