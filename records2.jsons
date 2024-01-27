@@ -1,0 +1,3 @@
+        {"person":{"name":"John", "age": 23}}
+        {"person":{"name":"Alice", "height": 162}}
+        {"person":{"name":"Bob", "age": 23, "height": 180}}

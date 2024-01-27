@@ -132,7 +132,55 @@ defmodule CliParser do
   defp parse_args(_a), do: {:error, :too_many_args}
 
   defp print_usage_and_exit() do
-    IO.puts(:stderr, "Usage: TODO")
+    message = """
+    js - JSON stream analyser
+    Usage:  
+        js <mode> [path]
+
+    Modes:
+      keys - find all keys in the JSON stream and count how many times each occurs
+      enums - find all keys in the JSON stream unique values for each key
+      enum_stats - find all keys in the JSON stream and calculate how many times each value occurs
+
+    Options:
+      --no-parallel - run in single process mode
+
+    Example:
+
+        $ cat records
+        {"person":{"name":"John", "age": 23}}
+        {"person":{"name":"Alice", "height": 162}}
+        {"person":{"name":"Bob", "age": 23, "height": 180}}
+
+        $ js keys records
+        {
+          "person": {
+            "age": 2,
+            "height": 2,
+            "name": 3
+          }
+        }
+        $ js enums records
+
+        {
+          "person": {
+            "age": 23,
+            "height": [162, 180],
+            "name": ["Bob", "Alice", "John"]
+          }
+        }
+
+        $ js enum_stats records
+        {
+          "person": {
+            "age": {"23": 2},
+            "height": {162": 1, "180": 1},
+            "name": {"Alice": 1, "Bob": 1, "John": 1}
+          }
+        }
+    """
+
+    IO.puts(:stderr, message)
     System.halt(1)
   end
 end
