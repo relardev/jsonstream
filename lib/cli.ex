@@ -1,9 +1,8 @@
 defmodule CLI do
   def main(argv) do
-    factory = stream_factory(argv)
+    {mode, parallel, path} = CliParser.parse(argv)
 
-    mode = :enum_stats
-    parallel = true
+    factory = stream_factory(path)
 
     {process, merge, decode} =
       case mode do
@@ -15,10 +14,18 @@ defmodule CLI do
           }
 
         :enums ->
-          {Enums.process(), Enums.merge(), DecodeEnums.decode()}
+          {
+            fn -> Enums.process(factory) end,
+            fn a, b -> Enums.merge(a, b) end,
+            fn a -> a end
+          }
 
         :keys ->
-          {Keys.process(), Keys.merge(), DecodeKeys.decode()}
+          {
+            fn -> Keys.process(factory) end,
+            fn a, b -> Keys.merge(a, b) end,
+            fn a -> a end
+          }
       end
 
     case parallel do
@@ -37,8 +44,8 @@ defmodule CLI do
     end
   end
 
-  defp stream_factory([path]) do
-    {:ok, pid} = FileServer.start_link(path)
+  defp stream_factory("") do
+    {:ok, pid} = StdinServer.start_link()
 
     fn ->
       Stream.resource(
@@ -54,8 +61,8 @@ defmodule CLI do
     end
   end
 
-  defp stream_factory([]) do
-    {:ok, pid} = StdinServer.start_link()
+  defp stream_factory(path) do
+    {:ok, pid} = FileServer.start_link(path)
 
     fn ->
       Stream.resource(
@@ -69,6 +76,64 @@ defmodule CLI do
         fn _ -> :ok end
       )
     end
+  end
+end
+
+defmodule CliParser do
+  def parse(argv) do
+    {parsed, args, _invalid} = OptionParser.parse(argv, switches: [parallel: :boolean])
+    # IO.puts(:stderr, "argv: #{inspect(argv)}")
+    # IO.puts(:stderr, "parsed: #{inspect(parsed)}, args: #{inspect(args)}")
+
+    {mode, path} =
+      case parse_args(args) do
+        {:ok, x} ->
+          x
+
+        {:error, _} ->
+          print_usage_and_exit()
+      end
+
+    mode =
+      case mode do
+        "enum_stats" ->
+          :enum_stats
+
+        "enums" ->
+          :enums
+
+        "keys" ->
+          :keys
+
+        _ ->
+          print_usage_and_exit()
+      end
+
+    parallel =
+      case parsed[:parallel] do
+        nil -> true
+        p -> p
+      end
+
+    IO.puts(
+      :stderr,
+      "starting in #{inspect(mode)} mode, reading from: #{path_representation(path)}"
+    )
+
+    {mode, parallel, path}
+  end
+
+  defp path_representation(""), do: "stdin"
+  defp path_representation(path), do: path
+
+  defp parse_args([]), do: {:error, :no_args}
+  defp parse_args([mode]), do: {:ok, {mode, ""}}
+  defp parse_args([mode, path]), do: {:ok, {mode, path}}
+  defp parse_args(_a), do: {:error, :too_many_args}
+
+  defp print_usage_and_exit() do
+    IO.puts(:stderr, "Usage: TODO")
+    System.halt(1)
   end
 end
 
