@@ -135,7 +135,7 @@ defmodule CliParser do
     message = """
     js - JSON stream analyser
     Usage:  
-        js <mode> [path]
+        js <mode> [file path]
 
     Modes:
       keys - find all keys in the JSON stream and count how many times each occurs

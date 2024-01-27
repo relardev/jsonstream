@@ -3,7 +3,7 @@ defmodule JkElixir.MixProject do
 
   def project do
     [
-      app: :jk_elixir,
+      app: :js,
       escript: escript_config(),
       version: "0.1.0",
       elixir: "~> 1.15",

@@ -31,7 +31,7 @@ FROM erlang:latest AS runtime
 WORKDIR /app
 
 # Copy the release build from the previous stage
-COPY --from=build /app/jk_elixir ./js
+COPY --from=build /app/js ./js
 
 ENV PATH="/app:${PATH}"
 
