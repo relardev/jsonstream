@@ -2,7 +2,13 @@ defmodule CLI do
   def main(argv) do
     factory = stream_factory(argv)
 
-    {:ok, _} = MainGenServer.start_link({self(), factory})
+    process = fn -> Enums.process(factory) end
+    merge = fn a, b -> Enums.merge(a, b) end
+
+    # process = fn -> Keys.process(factory) end
+    # merge = fn a, b -> Keys.merge(a, b) end
+    #
+    {:ok, _} = WorkCollector.start_link({self(), process, merge})
 
     receive do
       {:done, result} -> IO.puts(result)
@@ -44,66 +50,33 @@ defmodule CLI do
   end
 end
 
-defmodule Progress do
+defmodule WorkCollector do
   use GenServer
+  require Progress
 
-  def start_link(report_every) do
-    GenServer.start_link(__MODULE__, report_every, name: __MODULE__)
+  def start_link(args) do
+    GenServer.start_link(__MODULE__, args, name: __MODULE__)
   end
 
-  def init(report_every) do
-    {:ok, {0, 0, report_every, System.monotonic_time()}}
-  end
-
-  def update(count) do
-    GenServer.cast(__MODULE__, {:update, count})
-  end
-
-  def handle_cast({:update, count}, {current_count, since_last_report, report_every, start_time}) do
-    new_count = count + current_count
-    new_since_last_report = count + since_last_report
-
-    case new_since_last_report >= report_every do
-      true ->
-        now = System.monotonic_time()
-        rate = current_count / (now - start_time) * 1_000_000_000
-
-        IO.puts(:stderr, "Processed #{new_count} keys at #{rate} keys/sec")
-
-        {:noreply, {new_count, new_since_last_report - report_every, report_every, start_time}}
-
-      false ->
-        {:noreply, {new_count, new_since_last_report, report_every, start_time}}
-    end
-  end
-end
-
-defmodule MainGenServer do
-  use GenServer
-
-  def start_link(stream_factory) do
-    GenServer.start_link(__MODULE__, stream_factory, name: __MODULE__)
-  end
-
-  def init({from, stream_factory}) do
+  def init({from, process, merge}) do
     worker_count = System.schedulers_online() * 2
 
-    Progress.start_link(5000 * worker_count)
+    Progress.start_link(1000 * worker_count)
 
     for n <- 1..worker_count do
       IO.puts(:stderr, "Starting worker #{n}")
 
       Task.async(fn ->
-        {:ok, result} = Keys.process(stream_factory)
+        result = process.()
         GenServer.cast(__MODULE__, {:done, result})
       end)
     end
 
-    {:ok, {from, worker_count, %{}}}
+    {:ok, {from, worker_count, %{}, merge}}
   end
 
-  def handle_cast({:done, result}, {from, counter, previous}) do
-    result = Keys.merge(previous, result)
+  def handle_cast({:done, result}, {from, counter, previous, merge}) do
+    result = merge.(previous, result)
     counter = counter - 1
 
     case counter do
@@ -112,7 +85,7 @@ defmodule MainGenServer do
         {:noreply, {from, 0, result}}
 
       _ ->
-        {:noreply, {from, counter, result}}
+        {:noreply, {from, counter, result, merge}}
     end
   end
 

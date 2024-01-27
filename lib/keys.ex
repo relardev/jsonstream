@@ -1,6 +1,4 @@
 defmodule Keys do
-  require Logger
-
   def process(stream_factory) do
     result =
       stream_factory.()
@@ -23,7 +21,7 @@ defmodule Keys do
       end)
       |> elem(0)
 
-    {:ok, result}
+    result
   end
 
   defp keys(record) do
