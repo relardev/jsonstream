@@ -133,9 +133,14 @@ defmodule DecodeEnumStats do
   end
 
   def decode([hd | _t] = data) when is_tuple(hd) do
-    Enum.reduce(data, %{}, fn {key, v}, acc ->
-      Map.put(acc, key, v)
+    Enum.reduce(data, [], fn {key, v}, acc ->
+      [{key, v} | acc]
     end)
+    |> Enum.sort_by(fn {_, v} -> v end, &>=/2)
+    |> Enum.reduce([], fn {key, v}, acc ->
+      [%{key => v} | acc]
+    end)
+    |> Enum.reverse()
   end
 
   def decode([hd | _t]) when is_map(hd) do
