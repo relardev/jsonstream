@@ -1,22 +1,23 @@
 defmodule CLI do
   def main(argv) do
-    {mode, parallel, path} = CliParser.parse(argv)
+    {mode, parallel, path, max_enums} = CliParser.parse(argv)
 
     factory = stream_factory(path)
+    opts = [max_enums: max_enums]
 
     {process, merge, decode} =
       case mode do
         :enum_stats ->
           {
-            fn -> EnumStats.process(factory) end,
-            fn a, b -> EnumStats.merge(a, b) end,
+            fn -> EnumStats.process(factory, opts) end,
+            fn a, b -> EnumStats.merge(a, b, opts) end,
             fn a -> DecodeEnumStats.decode(a) end
           }
 
         :enums ->
           {
-            fn -> Enums.process(factory) end,
-            fn a, b -> Enums.merge(a, b) end,
+            fn -> Enums.process(factory, opts) end,
+            fn a, b -> Enums.merge(a, b, opts) end,
             fn a -> a end
           }
 
@@ -81,7 +82,9 @@ end
 
 defmodule CliParser do
   def parse(argv) do
-    {parsed, args, _invalid} = OptionParser.parse(argv, switches: [parallel: :boolean])
+    {parsed, args, _invalid} =
+      OptionParser.parse(argv, switches: [parallel: :boolean, max_enums: :integer])
+
     # IO.puts(:stderr, "argv: #{inspect(argv)}")
     # IO.puts(:stderr, "parsed: #{inspect(parsed)}, args: #{inspect(args)}")
 
@@ -115,12 +118,19 @@ defmodule CliParser do
         p -> p
       end
 
+    max_enums =
+      case parsed[:max_enums] do
+        x when x < 0 -> print_usage_and_exit()
+        nil -> 100
+        n -> n
+      end
+
     IO.puts(
       :stderr,
       "starting in #{inspect(mode)} mode, reading from: #{path_representation(path)}"
     )
 
-    {mode, parallel, path}
+    {mode, parallel, path, max_enums}
   end
 
   defp path_representation(""), do: "stdin"
@@ -144,6 +154,8 @@ defmodule CliParser do
 
     Options:
       --no-parallel - run in single process mode
+      --max-enums <n> - maximum number of unique values to collect for each key (default: 100)
+                        applies to both enums and enum_stats modes
 
     Example:
 
