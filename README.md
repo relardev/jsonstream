@@ -54,8 +54,15 @@ $ js enum_stats records
 {
   "person": {
     "age": {"23": 2},
-    "height": {162": 1, "180": 1},
-    "name": {"Alice": 1, "Bob": 1, "John": 1}
+    "height": [
+      {"180": 1},
+      {"162": 1}
+    ],
+    "name": [
+      {"John": 1},
+      {"Alice": 1},
+      {"Bob": 1}
+    ]
   }
 }
 ```

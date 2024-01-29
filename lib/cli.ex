@@ -143,53 +143,59 @@ defmodule CliParser do
 
   defp print_usage_and_exit() do
     message = """
-    js - JSON stream analyser
-    Usage:  
-        js <mode> [file path]
+     js - JSON stream analyser
+     Usage:  
+         js <mode> [file path]
 
-    Modes:
-      keys - find all keys in the JSON stream and count how many times each occurs
-      enums - find all keys in the JSON stream unique values for each key
-      enum_stats - find all keys in the JSON stream and calculate how many times each value occurs
+     Modes:
+       keys - find all keys in the JSON stream and count how many times each occurs
+       enums - find all keys in the JSON stream unique values for each key
+       enum_stats - find all keys in the JSON stream and calculate how many times each value occurs
 
-    Options:
-      --no-parallel - run in single process mode
-      --max-enums <n> - maximum number of unique values to collect for each key (default: 100)
-                        applies to both enums and enum_stats modes
+     Options:
+       --no-parallel - run in single process mode
+       --max-enums <n> - maximum number of unique values to collect for each key (default: 100)
+                         applies to both enums and enum_stats modes
 
-    Example:
+     Example:
+         $ cat records
+         {"person":{"name":"John", "age": 23}}
+         {"person":{"name":"Alice", "height": 162}}
+         {"person":{"name":"Bob", "age": 23, "height": 180}}
 
-        $ cat records
-        {"person":{"name":"John", "age": 23}}
-        {"person":{"name":"Alice", "height": 162}}
-        {"person":{"name":"Bob", "age": 23, "height": 180}}
+         $ js keys records
+         {
+           "person": {
+             "age": 2,
+             "height": 2,
+             "name": 3
+           }
+         }
 
-        $ js keys records
-        {
-          "person": {
-            "age": 2,
-            "height": 2,
-            "name": 3
-          }
-        }
+         $ js enums records
+         {
+           "person": {
+             "age": 23,
+             "height": [162, 180],
+             "name": ["Bob", "Alice", "John"]
+           }
+         }
 
-        $ js enums records
-        {
-          "person": {
-            "age": 23,
-            "height": [162, 180],
-            "name": ["Bob", "Alice", "John"]
-          }
-        }
-
-        $ js enum_stats records
-        {
-          "person": {
-            "age": {"23": 2},
-            "height": {162": 1, "180": 1},
-            "name": {"Alice": 1, "Bob": 1, "John": 1}
-          }
-        }
+         $ js enum_stats records
+         {
+           "person": {
+             "age": {"23": 2},
+             "height": [
+               {"180": 1},
+               {"162": 1}
+             ],
+             "name": [
+               {"John": 1},
+               {"Alice": 1},
+               {"Bob": 1}
+             ]
+           }
+         }
     """
 
     IO.puts(:stderr, message)
