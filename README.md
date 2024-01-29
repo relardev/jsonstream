@@ -15,8 +15,8 @@ $ cat records
 
 Modes:
 
-1. keys - find all keys in and count how many times each occurs
-1. enums - find unique values for each key
+1. keys - find all keys and count how many times each occurs
+1. enums - find all unique values for each key
 1. enum_stats - calculate how many times each value for a given key occurs
 
 
