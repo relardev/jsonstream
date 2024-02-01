@@ -26,3 +26,5 @@
 {"products":[{"id":555, "cat":"bread", "food":true},{"id":588, "cat":"potato", "food":true}]}
 {"test":[1,2,3]}
 {"contents": [{"cata": "mobile"}]}
+{"cars": [{"name": "fiat", "checks": [{"result": "ok", "date": "2017-01-01"}]}]}
+{"cars": [{"name": "skoda", "checks": [{"result": "ok", "date": "2017-01-01"}, {"result": "failed", "date": "2016-01-01"}]}]}
