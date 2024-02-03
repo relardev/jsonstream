@@ -8,7 +8,7 @@ defmodule Keys do
       |> Enum.reduce({%{}, 0}, fn record, {result, counter} ->
         counter =
           case counter do
-            5000 ->
+            1000 ->
               Progress.update(counter)
               0
 

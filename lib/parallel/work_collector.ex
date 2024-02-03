@@ -9,7 +9,7 @@ defmodule WorkCollector do
   def init({from, process, merge, decode}) do
     worker_count = System.schedulers_online() * 2
 
-    Progress.start_link(1000 * worker_count)
+    Progress.start_link(2000)
 
     for n <- 1..worker_count do
       IO.puts(:stderr, "Starting worker #{n}")
