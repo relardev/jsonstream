@@ -35,13 +35,7 @@ defmodule CLI do
 
         :keys ->
           {
-            fn ->
-              Keys.process(
-                factory,
-                &Progress.try_report_progress/1,
-                log
-              )
-            end,
+            fn -> Keys.process(factory, &Progress.try_report_progress/1, log) end,
             fn a, b -> Keys.merge(a, b) end,
             fn a -> a end
           }
