@@ -1,15 +1,34 @@
 defmodule Keys do
-  def process(stream_factory, try_report_progress) do
+  def process(stream_factory, try_report_progress, report_failure) do
     result =
       stream_factory.()
       |> Stream.map(fn data ->
-        Jason.decode!(data)
+        Jason.decode(data)
       end)
-      |> Enum.reduce({%{}, 0}, fn record, {result, counter} ->
+      |> Stream.map(fn
+        {:ok, data} ->
+          {:ok, data}
+
+        {:error, _} ->
+          report_failure.("could not decode json")
+          {:error, 0}
+      end)
+      |> Stream.filter(fn
+        {:ok, _} -> true
+        _ -> false
+      end)
+      |> Stream.map(fn {:ok, data} -> data end)
+      |> Enum.reduce({%{}, 0}, fn record, {acc, counter} ->
         counter = try_report_progress.(counter)
 
-        new = keys(record)
-        {merge(result, new), counter + 1}
+        try do
+          new = keys(record)
+          {merge(acc, new), counter + 1}
+        rescue
+          _ ->
+            report_failure.("could not merge")
+            {acc, counter}
+        end
       end)
       |> elem(0)
 

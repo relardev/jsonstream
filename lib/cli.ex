@@ -15,25 +15,33 @@ defmodule CLI do
 
     opts = [max_enums: max_enums]
 
+    log = fn message -> IO.puts(:stderr, message) end
+
     {process, merge, decode} =
       case mode do
         :enum_stats ->
           {
-            fn -> EnumStats.process(factory, &Progress.try_report_progress/1, opts) end,
+            fn -> EnumStats.process(factory, &Progress.try_report_progress/1, log, opts) end,
             fn a, b -> EnumStats.merge(a, b, opts) end,
             fn a -> DecodeEnumStats.decode(a) end
           }
 
         :enums ->
           {
-            fn -> Enums.process(factory, &Progress.try_report_progress/1, opts) end,
+            fn -> Enums.process(factory, &Progress.try_report_progress/1, log, opts) end,
             fn a, b -> Enums.merge(a, b, opts) end,
             fn a -> a end
           }
 
         :keys ->
           {
-            fn -> Keys.process(factory, &Progress.try_report_progress/1) end,
+            fn ->
+              Keys.process(
+                factory,
+                &Progress.try_report_progress/1,
+                log
+              )
+            end,
             fn a, b -> Keys.merge(a, b) end,
             fn a -> a end
           }

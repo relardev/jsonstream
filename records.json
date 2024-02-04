@@ -28,3 +28,4 @@
 {"contents": [{"cata": "mobile"}]}
 {"cars": [{"name": "fiat", "checks": [{"result": "ok", "date": "2017-01-01"}]}]}
 {"cars": [{"name": "skoda", "checks": [{"result": "ok", "date": "2017-01-01"}, {"result": "failed", "date": "2016-01-01"}]}]}
+{"list":[1]}

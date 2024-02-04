@@ -1,14 +1,33 @@
 defmodule Enums do
-  def process(stream_factory, try_report_progress, opts) do
+  def process(stream_factory, try_report_progress, report_error, opts) do
     result =
       stream_factory.()
       |> Stream.map(fn data ->
-        Jason.decode!(data)
+        Jason.decode(data)
       end)
+      |> Stream.map(fn
+        {:ok, data} ->
+          {:ok, data}
+
+        {:error, _} ->
+          report_error.("could not decode json")
+          {:error, 0}
+      end)
+      |> Stream.filter(fn
+        {:ok, _} -> true
+        _ -> false
+      end)
+      |> Stream.map(fn {:ok, data} -> data end)
       |> Enum.reduce({%{}, 0}, fn record, {result, counter} ->
         counter = try_report_progress.(counter)
 
-        {merge(result, record, opts), counter + 1}
+        try do
+          {merge(result, record, opts), counter + 1}
+        rescue
+          _ ->
+            report_error.("could not merge")
+            {result, counter}
+        end
       end)
       |> elem(0)
 

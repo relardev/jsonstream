@@ -1,10 +1,23 @@
 defmodule EnumStats do
-  def process(stream_factory, try_report_progress, opts) do
+  def process(stream_factory, try_report_progress, report_failure, opts) do
     result =
       stream_factory.()
       |> Stream.map(fn data ->
-        Jason.decode!(data)
+        result = Jason.decode(data)
+
+        {ok, _} = result
+
+        if ok == :error do
+          report_failure.("could not decode json")
+        end
+
+        result
       end)
+      |> Stream.filter(fn
+        {:ok, _} -> true
+        _ -> false
+      end)
+      |> Stream.map(fn {:ok, data} -> data end)
       |> Enum.reduce({%{}, 0}, fn record, {acc, counter} ->
         counter = try_report_progress.(counter)
 
