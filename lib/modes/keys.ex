@@ -1,20 +1,12 @@
 defmodule Keys do
-  def process(stream_factory) do
+  def process(stream_factory, try_report_progress) do
     result =
       stream_factory.()
       |> Stream.map(fn data ->
         Jason.decode!(data)
       end)
       |> Enum.reduce({%{}, 0}, fn record, {result, counter} ->
-        counter =
-          case counter do
-            1000 ->
-              Progress.update(counter)
-              0
-
-            counter ->
-              counter
-          end
+        counter = try_report_progress.(counter)
 
         new = keys(record)
         {merge(result, new), counter + 1}

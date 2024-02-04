@@ -1,6 +1,17 @@
 defmodule Progress do
   use GenServer
 
+  def try_report_progress(x) when is_number(x) do
+    case x do
+      1000 ->
+        GenServer.cast(__MODULE__, {:add, x})
+        0
+
+      x ->
+        x
+    end
+  end
+
   def start_link(report_every) do
     GenServer.start_link(__MODULE__, report_every, name: __MODULE__)
   end
@@ -10,11 +21,7 @@ defmodule Progress do
     {:ok, {0, System.monotonic_time()}}
   end
 
-  def update(count) do
-    GenServer.cast(__MODULE__, {:update, count})
-  end
-
-  def handle_cast({:update, new}, {count, start_time}) do
+  def handle_cast({:add, new}, {count, start_time}) do
     {:noreply, {count + new, start_time}}
   end
 
