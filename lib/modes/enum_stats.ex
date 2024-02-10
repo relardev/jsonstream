@@ -1,5 +1,5 @@
 defmodule EnumStats do
-  def process(stream_factory, try_report_progress, report_failure, opts) do
+  def process(stream_factory, report_progress, try_report_progress, report_error, opts) do
     result =
       stream_factory.()
       |> Stream.map(fn data ->
@@ -8,7 +8,7 @@ defmodule EnumStats do
         {ok, _} = result
 
         if ok == :error do
-          report_failure.("could not decode json")
+          report_error.("could not decode json")
         end
 
         result
@@ -21,15 +21,23 @@ defmodule EnumStats do
       |> Enum.reduce({%{}, 0}, fn record, {acc, counter} ->
         counter = try_report_progress.(counter)
 
-        acc =
-          tuple(record)
-          |> merge(acc, opts)
+        try do
+          acc =
+            tuple(record)
+            |> merge(acc, opts)
 
-        {acc, counter + 1}
+          {acc, counter + 1}
+        rescue
+          _ ->
+            report_error.("could not merge or tuple")
+            {acc, counter}
+        end
       end)
-      |> elem(0)
 
-    result
+    elem(result, 1)
+    |> report_progress.()
+
+    elem(result, 0)
   end
 
   def tuple(record) when is_map(record) do

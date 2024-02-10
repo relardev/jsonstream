@@ -1,5 +1,5 @@
 defmodule Keys do
-  def process(stream_factory, try_report_progress, report_failure) do
+  def process(stream_factory, report_progress, try_report_progress, report_failure) do
     result =
       stream_factory.()
       |> Stream.map(fn data ->
@@ -30,9 +30,11 @@ defmodule Keys do
             {acc, counter}
         end
       end)
-      |> elem(0)
 
-    result
+    elem(result, 1)
+    |> report_progress.()
+
+    elem(result, 0)
   end
 
   defp keys(record) do

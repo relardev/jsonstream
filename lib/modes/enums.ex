@@ -1,5 +1,5 @@
 defmodule Enums do
-  def process(stream_factory, try_report_progress, report_error, opts) do
+  def process(stream_factory, report_progress, try_report_progress, report_error, opts) do
     result =
       stream_factory.()
       |> Stream.map(fn data ->
@@ -29,9 +29,11 @@ defmodule Enums do
             {result, counter}
         end
       end)
-      |> elem(0)
 
-    result
+    elem(result, 1)
+    |> report_progress.()
+
+    elem(result, 0)
   end
 
   def merge(map1, map2, opts) when is_map(map1) and is_map(map2) do
