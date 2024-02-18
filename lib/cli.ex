@@ -60,6 +60,21 @@ defmodule CLI do
             fn a, b -> Keys.merge(a, b) end,
             fn a -> a end
           }
+
+        :json_schema ->
+          {
+            fn ->
+              JsonSchema.process(
+                factory,
+                &Progress.report_progress/1,
+                &Progress.try_report_progress/1,
+                &Progress.report_error/1,
+                opts
+              )
+            end,
+            fn a, b -> JsonSchema.merge(a, b, opts) end,
+            fn a -> a end
+          }
       end
 
     case parallel do
@@ -108,6 +123,9 @@ defmodule CliParser do
 
         "keys" ->
           :keys
+
+        "json_schema" ->
+          :json_schema
 
         _ ->
           print_usage_and_exit()

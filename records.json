@@ -1,18 +1,13 @@
-{"a": 1234, "b": 5678, "c": 9012 }
+{"a": 1234, "c": 9012 }
 {"d": 3456 }
 {"f": {"g": 7890} }
 {"f": {"d": 7890} }
-{"c": "1234"}
-{"list":{"ars":[1,2,555]}}
-{"c": "1234"}
-{"c": "1234"}
-{"c": "1234"}
-{"c": "1234"}
 {"list":{"ars":[1,2,555]}}
 {"list":{"ars":[1,2,555]}}
 {"list":{"ars":[1,2,555]}}
 {"list":{"ars":[1,2,555]}}
-{"a": 1234, "b": 5678, "c": 9012 }
+{"list":{"ars":[1,2,555]}}
+{"a": 1234, "c": 9012 }
 {"a": 343}
 {"a": 343}
 {"a": 342}
@@ -24,8 +19,9 @@
 {"geo":{"city":"aaa", "code":"bbb"}}
 {"products":[{"id":234, "cat":"shoe"},{"id":111, "cat":"shoe", "food":false}]}
 {"products":[{"id":555, "cat":"bread", "food":true},{"id":588, "cat":"potato", "food":true}]}
-{"test":[1,2,3]}
 {"contents": [{"cata": "mobile"}]}
 {"cars": [{"name": "fiat", "checks": [{"result": "ok", "date": "2017-01-01"}]}]}
-{"cars": [{"name": "skoda", "checks": [{"result": "ok", "date": "2017-01-01"}, {"result": "failed", "date": "2016-01-01"}]}]}
-{"list":[1]}
+{"cars": [{"weight": 34,"name": "skoda", "checks": [{"result": "ok", "date": "2017-01-01"}, {"result": "failed", "date": "2016-01-01"}]}]}
+{"testa":[[1],[2],[3]]}
+{"testa":[[4],[5],[6]]}
+{"testa":[[7],[8],[9]]}
