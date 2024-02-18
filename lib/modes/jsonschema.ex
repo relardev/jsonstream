@@ -51,7 +51,8 @@ defmodule JsonSchema do
     }
   end
 
-  defp schema(record) when is_number(record) or is_boolean(record) or is_binary(record) do
+  defp schema(record)
+       when is_number(record) or is_boolean(record) or is_binary(record) or is_nil(record) do
     %{type: repr(record)}
   end
 
@@ -83,6 +84,10 @@ defmodule JsonSchema do
 
   defp repr(v) when is_binary(v) do
     "string"
+  end
+
+  defp repr(v) when is_nil(v) do
+    "null"
   end
 
   def merge(a, a, _opts) do
@@ -172,5 +177,21 @@ defmodule JsonSchema do
 
   def merge(%{type: "array", items: %{type: "string"}} = a, %{type: "string"} = b, _opts) do
     %{oneOf: [a, b]}
+  end
+
+  def merge(a, %{type: "null"}, _opts) do
+    a
+  end
+
+  def merge(%{type: "null"}, b, _opts) do
+    b
+  end
+
+  def merge(a, b, _opts) when b == %{} do
+    a
+  end
+
+  def merge(a, b, _opts) when a == %{} do
+    b
   end
 end
