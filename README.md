@@ -81,6 +81,6 @@ but reading from stdin is slower than reading from file, for bigger jobs mount v
 
 1. install elixir
 1. download dependencies - `mix deps.get`
-1. build binary - `mix escrypt.build`
+1. build binary - `mix escript.build`
 1. you have binary `js` ready to go
 1. pass stdin or filename: `js keys records.json`
