@@ -11,16 +11,24 @@ defmodule FileServer do
   end
 
   def handle_call(:read, _from, file) do
-    case :file.read_line(file) do
-      {:ok, data} ->
-        {:reply, data, file}
-
-      :eof ->
-        {:reply, :eof, file}
-    end
+    line = produce_line(file)
+    {:reply, line, file}
   end
 
   def terminate(_reason, file) do
     File.close(file)
+  end
+
+  def produce_line(file) do
+    case :file.read_line(file) do
+      {:ok, "//" <> _} ->
+        produce_line(file)
+
+      {:ok, data} ->
+        data
+
+      :eof ->
+        :eof
+    end
   end
 end

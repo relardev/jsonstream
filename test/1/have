@@ -1,0 +1,27 @@
+{"a": 1234, "c": 9012 }
+{"d": 3456 }
+{"f": {"g": 7890} }
+{"f": {"d": 7890} }
+{"list":{"ars":[1,2,555]}}
+{"list":{"ars":[1,2,555]}}
+{"list":{"ars":[1,2,555]}}
+{"list":{"ars":[1,2,555]}}
+{"list":{"ars":[1,2,555]}}
+{"a": 1234, "c": 9012 }
+{"a": 343}
+{"a": 343}
+{"a": 342}
+{"b": [34, 455]}
+{"b": [1, 3]}
+{"id":"caietrsnt"}
+{"id":"trsinrsienr"}
+{"geo":{"city":"ccc", "code":"bbb"}}
+{"geo":{"city":"aaa", "code":"bbb"}}
+{"products":[{"id":234, "cat":"shoe"},{"id":111, "cat":"shoe", "food":false}]}
+{"products":[{"id":555, "cat":"bread", "food":true},{"id":588, "cat":"potato", "food":true}]}
+{"contents": [{"cata": "mobile"}]}
+{"cars": [{"name": "fiat", "checks": [{"result": "ok", "date": "2017-01-01"}]}]}
+{"cars": [{"weight": 34,"name": "skoda", "checks": [{"result": "ok", "date": "2017-01-01"}, {"result": "failed", "date": "2016-01-01"}]}]}
+//{"testa":[[1],[2],[3]]}
+//{"testa":[[4],[5],[6]]}
+//{"testa":[[7],[8],[9]]}

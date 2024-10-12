@@ -1,0 +1,42 @@
+{
+  "a": 5,
+  "b": 2,
+  "c": 2,
+  "cars": [
+    {
+      "checks": [
+        {
+          "date": 2,
+          "result": 2
+        }
+      ],
+      "name": 2,
+      "weight": 1
+    }
+  ],
+  "contents": [
+    {
+      "cata": 1
+    }
+  ],
+  "d": 1,
+  "f": {
+    "d": 1,
+    "g": 1
+  },
+  "geo": {
+    "city": 2,
+    "code": 2
+  },
+  "id": 2,
+  "list": {
+    "ars": 5
+  },
+  "products": [
+    {
+      "cat": 2,
+      "food": 1.5,
+      "id": 2
+    }
+  ]
+}
