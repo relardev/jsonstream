@@ -70,12 +70,12 @@ defmodule EnumStats do
     end)
   end
 
-  def merge(_a, [:too_many_records], _opts) do
-    [:too_many_records]
+  def merge(_a, [:too_many_records | _tl] = b, _opts) do
+    b
   end
 
-  def merge([:too_many_records], _b, _opts) do
-    [:too_many_records]
+  def merge([:too_many_records | _tl] = a, _b, _opts) do
+    a
   end
 
   def merge(a, nil, _opts) when is_tuple(a) or is_map(a) or is_list(a) do
@@ -148,12 +148,12 @@ defmodule EnumStats do
     end)
   end
 
-  defp add_tuple(_t, [:too_many_records], _opts), do: [:too_many_records]
+  defp add_tuple(_t, [:too_many_records | _tl] = b, _opts), do: b
 
   defp add_tuple(t, [hd | _tail] = to, max_enums: limit) when is_tuple(hd) and is_tuple(t) do
     case length(to) >= limit do
       true ->
-        [:too_many_records]
+        [:too_many_records] ++ Enum.take(to, 3)
 
       false ->
         add_tuple_r(t, to, [])
@@ -192,5 +192,10 @@ defmodule DecodeEnumStats do
     %{key => count}
   end
 
-  def decode([:too_many_records]), do: ["too_many_records"]
+  def decode([:too_many_records | tl]) do
+    ["too_many_records"] ++
+      Enum.map(tl, fn {value, _count} ->
+        value
+      end)
+  end
 end

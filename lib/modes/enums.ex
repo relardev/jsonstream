@@ -48,12 +48,12 @@ defmodule Enums do
     end)
   end
 
-  def merge([:too_many_records], _b, _opts) do
-    [:too_many_records]
+  def merge([:too_many_records | tl], _b, _opts) do
+    [:too_many_records | tl]
   end
 
-  def merge(_a, [:too_many_records], _opts) do
-    [:too_many_records]
+  def merge(_a, [:too_many_records | tl], _opts) do
+    [:too_many_records | tl]
   end
 
   def merge(a, a, _opts) do
@@ -75,7 +75,7 @@ defmodule Enums do
       {:base, b} ->
         case length(b) + length(a) >= limit do
           true ->
-            [:too_many_records]
+            [:too_many_records] ++ Enum.take(a, 3)
 
           false ->
             Enum.uniq(a ++ b)
@@ -99,7 +99,7 @@ defmodule Enums do
       when (is_boolean(a) or is_number(a) or is_binary(a)) and is_list(b) do
     case length(b) >= limit do
       true ->
-        [:too_many_records]
+        [:too_many_records] ++ Enum.take(b, 3)
 
       false ->
         if Enum.member?(b, a) do
