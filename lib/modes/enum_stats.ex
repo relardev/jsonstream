@@ -119,6 +119,35 @@ defmodule EnumStats do
     end)
   end
 
+  def merge([hd1 | _t1] = a, [hd2 | _t2] = b, opts) when is_list(hd1) and is_list(hd2) do
+    (a ++ b)
+    |> Enum.reduce([], fn list, acc ->
+      merge(list, acc, opts)
+    end)
+  end
+
+  def merge([hd1 | _tl] = a, [], _opts) when is_tuple(hd1) do
+    a
+  end
+
+  def merge([], [hd1 | _tl] = b, _opts) when is_tuple(hd1) do
+    b
+  end
+
+  def merge([hd1 | _tl1] = a, [hd2 | _tl2] = b, opts) when is_tuple(hd1) and is_list(hd2) do
+    reduced_b =
+      Enum.reduce(
+        b,
+        fn x, acc ->
+          merge(acc, x, opts)
+        end
+      )
+
+    Enum.reduce(a, reduced_b, fn x, acc ->
+      add_tuple(x, acc, opts)
+    end)
+  end
+
   defp add_tuple(_t, [:too_many_records], _opts), do: [:too_many_records]
 
   defp add_tuple(t, [hd | _tail] = to, max_enums: limit) when is_tuple(hd) and is_tuple(t) do

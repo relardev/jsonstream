@@ -22,6 +22,6 @@
 {"contents": [{"cata": "mobile"}]}
 {"cars": [{"name": "fiat", "checks": [{"result": "ok", "date": "2017-01-01"}]}]}
 {"cars": [{"weight": 34,"name": "skoda", "checks": [{"result": "ok", "date": "2017-01-01"}, {"result": "failed", "date": "2016-01-01"}]}]}
-//{"testa":[[1],[2],[3]]}
-//{"testa":[[4],[5],[6]]}
-//{"testa":[[7],[8],[9]]}
+{"testa":[[1],[2],[3]]}
+{"testa":[[4],[5],[6]]}
+{"testa":[[7],[8],[9]]}
