@@ -29,7 +29,7 @@ defmodule CLI do
               )
             end,
             fn a, b -> EnumStats.merge(a, b, opts) end,
-            fn a -> DecodeEnumStats.decode(a) end
+            fn a -> DecodeEnumStats.decode_outer(a) end
           }
 
         :enums ->
@@ -76,6 +76,8 @@ defmodule CLI do
             fn a -> a end
           }
       end
+
+    Progress.start_link(2000)
 
     case parallel do
       true ->

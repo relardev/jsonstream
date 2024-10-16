@@ -16,6 +16,10 @@ defmodule Progress do
     GenServer.cast(__MODULE__, {:add, x})
   end
 
+  def count() do
+    GenServer.call(__MODULE__, :count)
+  end
+
   def report_error(message) do
     GenServer.cast(__MODULE__, {:err, message})
   end
@@ -41,6 +45,10 @@ defmodule Progress do
 
   def handle_cast({:err, message}, {count, errors, start_time}) do
     {:noreply, {count, Map.update(errors, message, 1, &(&1 + 1)), start_time}}
+  end
+
+  def handle_call(:count, _from, {count, _, _} = state) do
+    {:reply, count, state}
   end
 
   def handle_call(:final_report, _from, {count, errors, start_time}) do

@@ -166,36 +166,45 @@ defmodule EnumStats do
 end
 
 defmodule DecodeEnumStats do
-  def decode(data) when is_map(data) do
+  def decode_outer(data) do
+    decode(data, Progress.count())
+  end
+
+  defp decode(data, count) when is_map(data) do
     data
     |> Enum.reduce(%{}, fn {key, v}, acc ->
-      Map.put(acc, key, decode(v))
+      Map.put(acc, key, decode(v, count))
     end)
   end
 
-  def decode([hd | _t] = data) when is_tuple(hd) do
+  defp decode([hd | _t] = data, count) when is_tuple(hd) do
     Enum.reduce(data, [], fn {key, v}, acc ->
       [{key, v} | acc]
     end)
     |> Enum.sort_by(fn {_, v} -> v end, &>=/2)
     |> Enum.reduce([], fn {key, v}, acc ->
-      [%{key => v} | acc]
+      [%{key => percent(v / count)} | acc]
     end)
     |> Enum.reverse()
   end
 
-  def decode([hd | _t]) when is_map(hd) do
-    [decode(hd)]
+  defp decode([hd | _t], count) when is_map(hd) do
+    [decode(hd, count)]
   end
 
-  def decode({key, count}) do
-    %{key => count}
-  end
-
-  def decode([:too_many_records | tl]) do
+  defp decode([:too_many_records | tl], _count) do
     ["too_many_records"] ++
       Enum.map(tl, fn {value, _count} ->
         value
       end)
+  end
+
+  defp decode({key, key_count}, count) do
+    %{key => percent(key_count / count)}
+  end
+
+  defp percent(n) do
+    formatted = :io_lib.format("~.1f", [n * 100])
+    "#{formatted}%"
   end
 end

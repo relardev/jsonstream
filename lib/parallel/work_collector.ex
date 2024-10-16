@@ -15,8 +15,7 @@ defmodule WorkCollector do
       IO.puts(:stderr, "Starting worker #{n}")
 
       Task.async(fn ->
-        result = process.()
-        GenServer.cast(__MODULE__, {:done, result})
+        GenServer.cast(__MODULE__, {:done, process.()})
       end)
     end
 
