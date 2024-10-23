@@ -2,23 +2,19 @@ defmodule Enums do
   def process(stream_factory, report_progress, try_report_progress, report_error, opts) do
     result =
       stream_factory.()
-      |> Stream.map(fn data ->
-        Jason.decode(data)
-      end)
-      |> Stream.map(fn
-        {:ok, data} ->
-          {:ok, data}
-
+      |> Stream.map(&Jason.decode(&1))
+      |> Stream.each(fn
         {:error, _} ->
           report_error.("could not decode json")
-          {:error, 0}
+
+        _ ->
+          nil
       end)
       |> Stream.filter(fn
         {:ok, _} -> true
         _ -> false
       end)
-      |> Stream.map(fn {:ok, data} -> data end)
-      |> Enum.reduce({%{}, 0}, fn record, {result, counter} ->
+      |> Enum.reduce({%{}, 0}, fn {:ok, record}, {result, counter} ->
         counter = try_report_progress.(counter)
 
         try do
@@ -111,10 +107,6 @@ defmodule Enums do
   def collapse([], _opts), do: {:base, nil}
   def collapse(a, _opts), do: {:base, a}
 
-  def sort(a, b) do
-    case a < b do
-      true -> {a, b}
-      false -> {b, a}
-    end
-  end
+  def sort(a, b) when a < b, do: {a, b}
+  def sort(a, b), do: {b, a}
 end
