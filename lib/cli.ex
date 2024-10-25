@@ -58,7 +58,7 @@ defmodule CLI do
               )
             end,
             fn a, b -> Keys.merge(a, b) end,
-            fn a -> a end
+            fn a -> DecodeKeys.decode_outer(a) end
           }
 
         :json_schema ->

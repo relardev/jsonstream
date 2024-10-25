@@ -107,3 +107,29 @@ defmodule Keys do
   defp to_base(v) when is_nil(v), do: 0
   defp to_base(v), do: v
 end
+
+defmodule DecodeKeys do
+  def decode_outer(a) do
+    decode(a, Progress.count())
+  end
+
+  defp decode(data, count) when is_map(data) do
+    data
+    |> Enum.reduce(%{}, fn {k, v}, acc ->
+      Map.put(acc, k, decode(v, count))
+    end)
+  end
+
+  defp decode([data], count) when is_map(data) do
+    [decode(data, count)]
+  end
+
+  defp decode(value, count) when is_number(value) do
+    percent(value / count)
+  end
+
+  defp percent(n) do
+    formatted = :io_lib.format("~.1f", [n * 100])
+    "#{formatted}%"
+  end
+end
