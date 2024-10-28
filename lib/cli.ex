@@ -115,6 +115,17 @@ defmodule CliParser do
           print_usage_and_exit()
       end
 
+    if path != "" do
+      case File.exists?(path) do
+        true ->
+          :ok
+
+        false ->
+          IO.puts(:stderr, "file not found: #{path}")
+          System.halt(1)
+      end
+    end
+
     mode =
       case mode do
         "enum_stats" ->
