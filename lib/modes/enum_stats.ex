@@ -43,7 +43,11 @@ defmodule EnumStats do
   def tuple(record) when is_map(record) do
     record
     |> Enum.reduce(%{}, fn {key, v}, acc ->
-      Map.put(acc, key, tuple(v))
+      if v != nil do
+        Map.put(acc, key, tuple(v))
+      else
+        acc
+      end
     end)
   end
 
@@ -52,7 +56,9 @@ defmodule EnumStats do
   end
 
   def tuple(v) when is_list(v) do
-    Enum.map(v, &tuple/1)
+    v
+    |> Enum.filter(fn x -> x != nil end)
+    |> Enum.map(&tuple/1)
   end
 
   def merge(map1, map2, opts) when is_map(map1) and is_map(map2) do

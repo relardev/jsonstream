@@ -40,4 +40,5 @@ if [ "$mode" == "snapshot" ]; then
 else
 	run_test 1
 	run_test 2
+	run_test 3
 fi
