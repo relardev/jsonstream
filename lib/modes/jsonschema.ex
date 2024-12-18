@@ -106,6 +106,14 @@ defmodule JsonSchema do
     b
   end
 
+  def merge(%{properties: :too_many_properties}, _, _opts) do
+    %{type: "object", properties: :too_many_properties}
+  end
+
+  def merge(_, %{properties: :too_many_properties}, _opts) do
+    %{type: "object", properties: :too_many_properties}
+  end
+
   def merge(%{properties: prop_a}, %{properties: prop_b}, opts) do
     prop =
       [prop_a, prop_b]
@@ -117,6 +125,13 @@ defmodule JsonSchema do
         v2 = Map.get(prop_b, key)
         Map.put(acc, key, merge(v1, v2, opts))
       end)
+
+    prop =
+      if map_size(prop) > opts[:max_properties] do
+        :too_many_properties
+      else
+        prop
+      end
 
     %{type: "object", properties: prop}
   end
@@ -136,7 +151,7 @@ defmodule JsonSchema do
   # def merge(%{oneOf: a}, %{oneOf: b}, _opts) do
   #   %{oneOf: merge(a, b, %{})}
   # end
-  #
+
   def merge(%{oneOf: a}, %{type: _} = b, _opts) do
     res =
       case Enum.find(a, fn x -> x == b end) do
@@ -194,4 +209,23 @@ defmodule JsonSchema do
   def merge(a, b, _opts) when a == %{} do
     b
   end
+
+  def decode(%{type: "object", properties: :too_many_properties}) do
+    %{type: "object", additionalProperties: true}
+  end
+
+  def decode(%{type: "object", properties: prop}) do
+    prop =
+      Enum.reduce(prop, %{}, fn {k, v}, acc ->
+        Map.put(acc, k, decode(v))
+      end)
+
+    %{type: "object", properties: prop}
+  end
+
+  def decode(%{type: "string"} = a), do: a
+  def decode(%{type: "integer"} = a), do: a
+  def decode(%{type: "number"} = a), do: a
+  def decode(%{type: "null"} = a), do: a
+  def decode(%{type: "boolean"} = a), do: a
 end

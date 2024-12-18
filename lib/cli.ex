@@ -1,6 +1,6 @@
 defmodule CLI do
   def main(argv) do
-    {mode, parallel, path, max_enums} = CliParser.parse(argv)
+    {mode, parallel, path, max_enums, max_properties} = CliParser.parse(argv)
 
     factory =
       case path do
@@ -13,11 +13,16 @@ defmodule CLI do
       end
       |> StreamInput.from()
 
-    opts = [max_enums: max_enums]
-
     {process, merge, decode} =
       case mode do
         :enum_stats ->
+          opts = [max_enums: max_enums]
+
+          IO.puts(
+            :stderr,
+            "starting in #{inspect(mode)} mode, reading from: #{path_representation(path)} with options: #{inspect(opts)}"
+          )
+
           {
             fn ->
               EnumStats.process(
@@ -33,6 +38,13 @@ defmodule CLI do
           }
 
         :enums ->
+          opts = [max_enums: max_enums]
+
+          IO.puts(
+            :stderr,
+            "starting in #{inspect(mode)} mode, reading from: #{path_representation(path)} with options: #{inspect(opts)}"
+          )
+
           {
             fn ->
               Enums.process(
@@ -48,6 +60,11 @@ defmodule CLI do
           }
 
         :keys ->
+          IO.puts(
+            :stderr,
+            "starting in #{inspect(mode)} mode, reading from: #{path_representation(path)}"
+          )
+
           {
             fn ->
               Keys.process(
@@ -62,6 +79,13 @@ defmodule CLI do
           }
 
         :json_schema ->
+          opts = [max_properties: max_properties]
+
+          IO.puts(
+            :stderr,
+            "starting in #{inspect(mode)} mode, reading from: #{path_representation(path)} with options: #{inspect(opts)}"
+          )
+
           {
             fn ->
               JsonSchema.process(
@@ -73,7 +97,7 @@ defmodule CLI do
               )
             end,
             fn a, b -> JsonSchema.merge(a, b, opts) end,
-            fn a -> a end
+            fn a -> JsonSchema.decode(a) end
           }
       end
 
@@ -96,12 +120,17 @@ defmodule CLI do
         |> IO.puts()
     end
   end
+
+  defp path_representation(""), do: "stdin"
+  defp path_representation(path), do: path
 end
 
 defmodule CliParser do
   def parse(argv) do
     {parsed, args, _invalid} =
-      OptionParser.parse(argv, switches: [parallel: :boolean, max_enums: :integer])
+      OptionParser.parse(argv,
+        switches: [parallel: :boolean, max_enums: :integer, max_properties: :integer]
+      )
 
     # IO.puts(:stderr, "argv: #{inspect(argv)}")
     # IO.puts(:stderr, "parsed: #{inspect(parsed)}, args: #{inspect(args)}")
@@ -157,16 +186,15 @@ defmodule CliParser do
         n -> n
       end
 
-    IO.puts(
-      :stderr,
-      "starting in #{inspect(mode)} mode, reading from: #{path_representation(path)}"
-    )
+    max_properties =
+      case parsed[:max_properties] do
+        x when x < 0 -> print_usage_and_exit()
+        nil -> 1000
+        n -> n
+      end
 
-    {mode, parallel, path, max_enums}
+    {mode, parallel, path, max_enums, max_properties}
   end
-
-  defp path_representation(""), do: "stdin"
-  defp path_representation(path), do: path
 
   defp parse_args([]), do: {:error, :no_args}
   defp parse_args([mode]), do: {:ok, {mode, ""}}
