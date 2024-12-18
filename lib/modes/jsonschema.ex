@@ -223,6 +223,10 @@ defmodule JsonSchema do
     %{type: "object", properties: prop}
   end
 
+  def decode(%{type: "array", items: a}) do
+    %{type: "array", items: decode(a)}
+  end
+
   def decode(%{type: "string"} = a), do: a
   def decode(%{type: "integer"} = a), do: a
   def decode(%{type: "number"} = a), do: a
